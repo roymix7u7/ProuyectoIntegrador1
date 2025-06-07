@@ -4,7 +4,7 @@
  */
 package com.utp.integradorspringboot.models;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.io.Serializable;
 
@@ -38,6 +38,7 @@ public class Vehiculo implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
+    @JsonIgnoreProperties({"contraseña", "rol"}) // Evita bucles o campos problemáticos
     private Usuario propietario;
 
     // ----- Constructores -----
@@ -137,10 +138,7 @@ public class Vehiculo implements Serializable {
             return false;
         }
         Vehiculo other = (Vehiculo) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+        return (this.id != null || other.id == null) && (this.id == null || this.id.equals(other.id));
     }
 
     @Override

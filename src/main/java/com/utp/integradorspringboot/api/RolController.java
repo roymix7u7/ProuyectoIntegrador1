@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:8081")
+@CrossOrigin(origins = "http://localhost:8082")
 @RestController
 @RequestMapping("/api")
 public class RolController {

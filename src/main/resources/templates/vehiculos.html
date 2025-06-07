@@ -1,0 +1,161 @@
+<html layout:decorate="_layout">
+<head>
+    <title>UTP Integrador - Vehículos</title>
+</head>
+<body>
+<div layout:fragment="content" id="app">
+    <h1>Vehículos</h1>
+
+    <p class="text-end">
+        <button class="btn btn-primary" @click="nuevo">Nuevo</button>
+    </p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Placa</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Año</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="item in entidades">
+            <td>{{ item.id }}</td>
+            <td>{{ item.placa }}</td>
+            <td>{{ item.marca }}</td>
+            <td>{{ item.modelo }}</td>
+            <td>{{ item.anio }}</td>
+            <td class="text-end">
+                <button class="btn btn-primary" @click="editar(item.id)">Editar</button>
+                <button class="btn btn-danger" @click="eliminar(item.id)">Eliminar</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Modal de Nuevo/Editar -->
+    <div class="modal" tabindex="-1" id="mdlEntidad">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" v-if="entidad.id==0">Nuevo Vehículo</h5>
+                    <h5 class="modal-title" v-else>Editar Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Placa</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" v-model="entidad.placa" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Marca</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" v-model="entidad.marca" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Modelo</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" v-model="entidad.modelo" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-3 col-form-label">Año</label>
+                        <div class="col-sm-9">
+                            <input class="form-control" v-model="entidad.anio" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" v-if="entidad.id==0" @click="guardar">Guardar</button>
+                    <button class="btn btn-primary" v-else @click="actualizar">Actualizar</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal" tabindex="-1" id="mdlEliminar">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Eliminar Vehículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro que quieres eliminar este vehículo?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" @click="confirmarEliminacion">Eliminar</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script layout:fragment="script">
+    new Vue({
+        el: "#app",
+        data: {
+            entidades: [],
+            entidad: {
+                id: 0,
+                placa: "",
+                marca: "",
+                modelo: "",
+                anio: ""
+            }
+        },
+        methods: {
+            listar: function () {
+                this.$http.get('/api/vehiculos').then(response => {
+                    this.entidades = response.data;
+                });
+            },
+            nuevo: function () {
+                this.entidad = { id: 0, placa: "", marca: "", modelo: "", anio: "" };
+                $("#mdlEntidad").modal("show");
+            },
+            editar: function (id) {
+                this.$http.get('/api/vehiculos/' + id).then(response => {
+                    this.entidad = response.data;
+                    $("#mdlEntidad").modal("show");
+                });
+            },
+            guardar: function () {
+                this.$http.post('/api/vehiculos', this.entidad).then(response => {
+                    this.listar();
+                    $("#mdlEntidad").modal("hide");
+                });
+            },
+            actualizar: function () {
+                this.$http.put('/api/vehiculos/' + this.entidad.id, this.entidad).then(response => {
+                    this.listar();
+                    $("#mdlEntidad").modal("hide");
+                });
+            },
+            eliminar: function (id) {
+                this.entidad.id = id;
+                $("#mdlEliminar").modal("show");
+            },
+            confirmarEliminacion: function () {
+                this.$http.delete('/api/vehiculos/' + this.entidad.id).then(response => {
+                    this.listar();
+                    $("#mdlEliminar").modal("hide");
+                });
+            }
+        },
+        mounted: function () {
+            this.listar();
+        }
+    });
+</script>
+</body>
+</html>
